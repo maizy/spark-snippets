@@ -16,14 +16,14 @@ object IntFunctions {
   val square: Int => Int = v => v * v
   
   // as methods
-  def double(v: Int): Int = v * 2
-  def doubleOrZero(v: Integer): Int = Option(v).map(_ * 2).getOrElse(0)
+  def mul2(v: Int): Int = v * 2
+  def mul2OrMinusOne(v: Integer): Int = Option(v).map(_ * 2).getOrElse(-1)
 }
 
 object IntUDFs {
   val squareUdf: UserDefinedFunction = udf { IntFunctions.square }
-  val doubleUdf: UserDefinedFunction = udf { IntFunctions.double _ }
-  val doubleOrZeroUdf: UserDefinedFunction = udf { IntFunctions.doubleOrZero _ }
+  val mul2Udf: UserDefinedFunction = udf { IntFunctions.mul2 _ }
+  val mul2OrMinusOneUdf: UserDefinedFunction = udf { IntFunctions.mul2OrMinusOne _ }
 }
 
 object IntUDFApp extends SparkSessionBuilder {
@@ -43,12 +43,17 @@ object IntUDFApp extends SparkSessionBuilder {
     sampleDF.printSchema()
     sampleDF.show(truncate = false)
 
+    assert(IntFunctions.mul2OrMinusOne(null) == -1)
+
+    // won't compile
+    //IntFunctions.double(null)
+
     val variants = for (
       name <- columns;
       (postfix, func) <- ISeq(
         ("Square", squareUdf),
-        ("Double", doubleUdf),
-        ("DoubleOrZero", doubleOrZeroUdf)
+        ("Mul2", mul2Udf),
+        ("Mul2OrMinusOne", mul2OrMinusOneUdf)
       )
     ) yield (name, postfix, func)
 
@@ -63,19 +68,19 @@ object IntUDFApp extends SparkSessionBuilder {
      |-- Int: integer (nullable = false)
      |-- NullableInt: integer (nullable = true)
      |-- IntSquare: integer (nullable = true)
-     |-- IntDouble: integer (nullable = true)
-     |-- IntDoubleOrZero: integer (nullable = false)   // <= !
+     |-- IntMul2: integer (nullable = true)   // if UDF doesn't allow null as a parameter it won't call for null values
+     |-- IntMul2OrMinusOne: integer (nullable = false)
      |-- NullableIntSquare: integer (nullable = true)
-     |-- NullableIntDouble: integer (nullable = true)
-     |-- NullableIntDoubleOrZero: integer (nullable = false)
+     |-- NullableIntMul2: integer (nullable = true)
+     |-- NullableIntMul2OrMinusOne: integer (nullable = false)  // null is converted explicitly by UDF. UDF always returns non null value.
 
-    +---+-----------+---------+---------+---------------+-----------------+-----------------+-----------------------+
-    |Int|NullableInt|IntSquare|IntDouble|IntDoubleOrZero|NullableIntSquare|NullableIntDouble|NullableIntDoubleOrZero|
-    +---+-----------+---------+---------+---------------+-----------------+-----------------+-----------------------+
-    |1  |10         |1        |2        |2              |100              |20               |20                     |
-    |2  |20         |4        |4        |4              |400              |40               |40                     |
-    |3  |null       |9        |6        |6              |null             |null             |0                      |
-    +---+-----------+---------+---------+---------------+-----------------+-----------------+-----------------------+
+    +---+-----------+---------+-------+-----------------+-----------------+---------------+-------------------------+
+    |Int|NullableInt|IntSquare|IntMul2|IntMul2OrMinusOne|NullableIntSquare|NullableIntMul2|NullableIntMul2OrMinusOne|
+    +---+-----------+---------+-------+-----------------+-----------------+---------------+-------------------------+
+    |1  |10         |1        |2      |2                |100              |20             |20                       |
+    |2  |20         |4        |4      |4                |400              |40             |40                       |
+    |3  |null       |9        |6      |6                |null             |null           |-1                       |
+    +---+-----------+---------+-------+-----------------+-----------------+---------------+-------------------------+
 
      */
   }
