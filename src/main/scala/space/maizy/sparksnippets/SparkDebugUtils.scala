@@ -11,8 +11,8 @@ trait SparkDebugUtils {
   implicit class DescribeSyntax(df: DataFrame) {
     def describeMe(name: String): Unit = {
       Console.println(s"=== $name ===")
-      df.printSchema()
       df.show(truncate = false)
+      df.printSchema()
     }
 
     def describeMe(): Unit = describeMe("")
