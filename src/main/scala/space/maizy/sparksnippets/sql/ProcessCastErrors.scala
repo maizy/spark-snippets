@@ -19,7 +19,7 @@ object ProcessCastErrors extends SparkSessionBuilder with SparkDebugUtils {
 
     val sample = ISeq(
       (Some(1L),  Some("1")),
-      (Some(2L),  Some("2")),
+      (Some(2L),  Some("26.8")),
       (None,      Some("n/a")),
       (None,      Some("-")),
       (None,      Some("")),
