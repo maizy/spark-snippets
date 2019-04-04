@@ -1,4 +1,4 @@
-package space.maizy.sparksnippets.sql
+package space.maizy.sparksnippets.types
 
 /**
  * Copyright (c) Nikita Kovaliov, maizy.ru, 2018

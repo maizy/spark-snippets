@@ -17,6 +17,7 @@ trait SparkSessionBuilder {
       .config("spark.sql.session.timeZone", "Europe/Moscow")
       .master("local[*]")
       .config("spark.driver.host", "localhost")
+      .config("spark.debug.maxToStringFields", 10000)
 
     sparkSessionBuilder.getOrCreate()
   }
